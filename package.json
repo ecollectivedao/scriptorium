@@ -10,12 +10,13 @@
   },
   "dependencies": {
     "ethers": "^6.8.1",
-    "ipfs": "^0.66.1",
     "next": "14.0.1",
     "react": "^18",
     "react-dom": "^18"
   },
   "devDependencies": {
+    "@composedb/devtools": "^0.5.1",
+    "@composedb/devtools-node": "^0.5.2",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

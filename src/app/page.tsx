@@ -1,19 +1,14 @@
-import Image from "next/image";
 import ConnectWalletButton from "./components/ConnectWalletButton";
+import ScribeLogo from "./components/ScribeLogo";
 
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       {/* Content Section */}
-      <section className="text-center">
-        <Image
-          className="display inline-block"
-          src="/scribe_logo_white.png" // Make sure to replace this with the path to your actual logo
-          alt="Scribe Logo"
-          width={200}
-          height={200}
-          priority
-        />
+      <section className="flex flex-col items-center text-center">
+        <div className="w-72 h-72">
+          <ScribeLogo fill="#FFFFFF"/>
+        </div>
         <h1 className="text-4xl font-bold my-6">Welcome to Scribe</h1>
         <p className="text-lg mb-6">
           The ultimate platform for connecting your ideas with the world.
