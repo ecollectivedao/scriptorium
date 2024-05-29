@@ -9,11 +9,11 @@ export default function Home() {
         <div className="w-72 h-72">
           <ScribeLogo fill="#FFFFFF"/>
         </div>
-        <h1 className="text-4xl font-bold my-6">Welcome to Scribe</h1>
+        <h1 className="text-4xl font-bold my-6">Welcome to Scriptorium</h1>
         <p className="text-lg mb-6">
-          The ultimate platform for connecting your ideas with the world.
+          The ultimate platform for content collaboration
           <br />
-          Connect your wallet and start your journey today.
+          Connect your wallet and start your journey today
         </p>
         <ConnectWalletButton />
       </section>
