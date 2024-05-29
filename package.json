@@ -15,8 +15,6 @@
     "react-dom": "^18"
   },
   "devDependencies": {
-    "@composedb/devtools": "^0.5.1",
-    "@composedb/devtools-node": "^0.5.2",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
@@ -26,5 +24,6 @@
     "postcss": "^8",
     "tailwindcss": "^3.3.0",
     "typescript": "^5"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
