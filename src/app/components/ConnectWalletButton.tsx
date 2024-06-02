@@ -1,35 +1,72 @@
 "use client";
 
-import { BrowserProvider } from "ethers";
+import { useState, useEffect } from "react";
+import { ethers, Signer } from "ethers";
+import IdentityManagement from "../contracts/IdentityManagement.json";
 
-// Define the ConnectWalletButton as a functional component
-const ConnectWalletButton = () => {
-  // Function to handle connecting the wallet
-  const handleConnectWallet = async () => {
-    try {
-      if (window.ethereum) {
-        // Create a new BrowserProvider instance using the injected window.ethereum provider
-        const browserProvider = new BrowserProvider(window.ethereum);
+interface ConnectWalletButtonProps {
+  setSigner: (signer: Signer) => void;
+}
 
-        // Request the user's Ethereum accounts.
-        const accounts = await browserProvider.send("eth_requestAccounts", []);
+const ConnectWalletButton: React.FC<ConnectWalletButtonProps> = ({ setSigner }) => {
+  const [connected, setConnected] = useState(false);
+  const [signer, setLocalSigner] = useState<Signer | null>(null);
 
-        // Do something with the accounts...
-        console.log("Connected accounts:", accounts);
-      } else {
-        console.log("Please install MetaMask!");
+  useEffect(() => {
+    const registerUser = async () => {
+      if (!signer) return;
+
+      const identityManagementAddress = "0x266f2bE7076aE52bFB8f30c10AE577055c71DA63";
+      const contract = new ethers.Contract(identityManagementAddress, IdentityManagement.abi, signer);
+
+      try {
+        const address = await signer.getAddress();
+        console.log("Address retrieved: ", address);
+
+        const sid = await contract.getSid(address);
+        console.log("SID retrieved: ", sid);
+
+        // Compare BigInt with BigInt 0n
+        if (sid === 0n) {
+          const tx = await contract.register();
+          await tx.wait();
+          console.log("User registered successfully!");
+        } else {
+          console.log("User already registered!");
+        }
+      } catch (err) {
+        console.error("Registration failed: ", err);
       }
-    } catch (error) {
-      console.error("An error occurred:", error);
+    };
+
+    if (signer) {
+      registerUser();
+    }
+  }, [signer]);
+
+  const connectWallet = async () => {
+    if (typeof window.ethereum !== 'undefined') {
+      try {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        const signer = await provider.getSigner();
+        setLocalSigner(signer);
+        setSigner(signer);
+        setConnected(true);
+      } catch (err) {
+        console.error("User rejected connection request.");
+      }
+    } else {
+      console.error("Please install MetaMask!");
     }
   };
 
   return (
     <button
-      onClick={handleConnectWallet}
-      className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline"
+      onClick={connectWallet}
+      className="bg-blue-500 text-white px-4 py-2 rounded"
     >
-      Connect Wallet
+      {connected ? "Wallet Connected" : "Connect Wallet"}
     </button>
   );
 };
