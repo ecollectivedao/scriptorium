@@ -2,12 +2,13 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import StoreProvider from './StoreProvider';
+import { NextUIProvider } from '@nextui-org/react';
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Scriptorium",
-  description: "The ultimate platform for content collaboration",
+  title: "Scribe",
+  description: "Your digital self",
 };
 
 export default function RootLayout({
@@ -18,7 +19,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <StoreProvider>{children}</StoreProvider>
+        <StoreProvider>
+          <NextUIProvider>
+            {children}
+          </NextUIProvider>
+        </StoreProvider>
       </body>
     </html>
   )

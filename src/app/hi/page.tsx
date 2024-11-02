@@ -1,30 +1,24 @@
 "use client";
-
-import { useState, useEffect } from "react";
 import ScribeLogo from "../components/ScribeLogo";
+import { Button } from "@nextui-org/react";
+import { useRouter } from "next/navigation";
 
 export default function LandingPage() {
-  const [isRegistered, setIsRegistered] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       {/* Content Section */}
       <section className="flex flex-col items-center text-center">
-        <div className="w-72 h-72">
+        <div className="w-60 h-60">
           <ScribeLogo fill="#FFFFFF" />
         </div>
-        <h1 className="text-4xl font-bold my-6">Welcome to Scriptorium</h1>
+        <h1 className="text-4xl font-bold my-6">Welcome to Scribe</h1>
         <p className="text-lg mb-6">
-          The ultimate platform for content collaboration
+          Build your digital self
         </p>
-        {loading ? (
-          <p>Loading...</p>
-        ) : isRegistered ? (
-          <p>Welcome back!</p> // Replace this with the component/page you want to show if the user is registered
-        ) : (
-          <p>Connect your wallet and start your journey today</p>
-        )}
+
+        <Button onClick={() => router.push("/signup")}>Get Started</Button>
       </section>
     </main>
   );
