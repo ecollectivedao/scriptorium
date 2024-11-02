@@ -1,15 +1,16 @@
-// store.ts
+// src/lib/store.ts
 import { configureStore } from '@reduxjs/toolkit';
 import authSlice from './slices/authSlice';
+import trainingSlice from './slices/trainingSlice';
 
-export const makeStore = (
-) => {
-    return configureStore({
-        reducer: {
-            auth: authSlice,
-        },
-        devTools: true,
-    });
+export const makeStore = () => {
+  return configureStore({
+    reducer: {
+      auth: authSlice,
+      training: trainingSlice,
+    },
+    devTools: true,
+  });
 };
 
 // Infer the type of makeStore

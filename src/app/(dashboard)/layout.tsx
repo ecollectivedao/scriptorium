@@ -5,7 +5,7 @@ import NavBar from "../components/nav/NavBar"; // Adjust path if needed
 
 const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <div>
+    <div className="bg-black">
       <NavBar />
       <main>
         {children}

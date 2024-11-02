@@ -15,7 +15,9 @@ const AppNavbar: React.FC = () => {
   return (
     <Navbar className="bg-transparent h-20">
       <NavbarBrand>
-        <ScribeLogo width={60} height={60} />
+        <Link href="/" className="text-white">
+          <ScribeLogo width={60} height={60} />
+        </Link>
       </NavbarBrand>
       <NavbarContent className="flex gap-20" justify="center">
         <NavbarItem>
