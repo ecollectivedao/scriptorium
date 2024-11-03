@@ -21,16 +21,12 @@ const authSlice = createSlice({
     logout(state) {
       state.token = null;
       state.isAuthenticated = false;
-    },
-    loadToken(state) {
-      const token = localStorage.getItem('token');
-      if (token) {
-        state.token = token;
-        state.isAuthenticated = true;
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
       }
     },
   },
 });
 
-export const { loginSuccess, logout, loadToken } = authSlice.actions;
+export const { loginSuccess, logout } = authSlice.actions;
 export default authSlice.reducer;

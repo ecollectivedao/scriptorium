@@ -1,4 +1,3 @@
-// src/app/components/auth/LoginForm.tsx
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -7,6 +6,7 @@ import { loginSuccess } from "@/lib/slices/authSlice";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { Link } from "@nextui-org/react";
+import { useLoginMutation } from "@/lib/slices/apiSlice";
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -14,34 +14,23 @@ const LoginForm: React.FC = () => {
   const [error, setError] = useState("");
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const [login, { isLoading: isLoggingIn, error: loginError }] = useLoginMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:8000/api/login/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      });
+      const data = await login({ email, password }).unwrap();
+      const token = data.token;
 
-      if (response.ok) {
-        const data = await response.json();
-        const token = data.token;
-
-        dispatch(loginSuccess(token));
-        localStorage.setItem("token", token);
-        router.push("/");
+      dispatch(loginSuccess(token));
+      localStorage.setItem("token", token);
+      router.push("/");
+    } catch (err: any) {
+      if (err?.data?.error) {
+        setError(err.data.error);
       } else {
-        const data = await response.json();
-        setError(data.error || "Login failed");
+        setError("An error occurred");
       }
-    } catch (err) {
-      setError("An error occurred");
     }
   };
 
@@ -68,9 +57,16 @@ const LoginForm: React.FC = () => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <p className="text-center mb-10">Don't have an account? <Link href="/signup" className="text-white-200">Sign Up</Link></p>
+        <p className="text-center mb-10">
+          Don&apos;t have an account?{" "}
+          <Link href="/signup" className="text-white-200">
+            Sign Up
+          </Link>
+        </p>
         <div className="flex justify-center">
-          <Button onClick={handleSubmit} className="w-1/2">Login</Button>
+          <Button type="submit" className="w-1/2" disabled={isLoggingIn}>
+            {isLoggingIn ? "Logging in..." : "Login"}
+          </Button>
         </div>
       </form>
     </div>

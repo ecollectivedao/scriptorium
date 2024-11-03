@@ -1,80 +1,89 @@
+'use client';
 import React, { useEffect, useState } from "react";
 import { Input, Button, Textarea } from "@nextui-org/react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { setCurrentQuestionIndex } from "@/lib/slices/trainingSlice";
 import {
-  fetchQuestions,
-  fetchUserAnswers,
-  submitAnswer,
-  setCurrentQuestionIndex,
-  updateUserAnswer,
-} from "@/lib/slices/trainingSlice";
+  useFetchQuestionsQuery,
+  useFetchUserAnswersQuery,
+  useSubmitAnswerMutation,
+} from "@/lib/slices/apiSlice";
+import UserAnswerCard from "./UserAnswerCard";
 
 const Train: React.FC = () => {
   const dispatch = useAppDispatch();
-  const {
-    questions,
-    userAnswers,
-    currentQuestionIndex,
-    loading,
-    error,
-  } = useAppSelector((state) => state.training);
 
+  // Get the current question index from the Redux store
+  const currentQuestionIndex = useAppSelector(
+    (state) => state.training.currentQuestionIndex
+  );
+
+  // Local state for the current answer input
   const [currentAnswer, setCurrentAnswer] = useState("");
-  const [token, setToken] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Only runs on the client side
-    const storedToken = localStorage.getItem("token");
-    setToken(storedToken);
-  }, []);
+  // Fetch questions using RTK Query
+  const {
+    data: questions = [],
+    isLoading: isLoadingQuestions,
+    error: questionsError,
+  } = useFetchQuestionsQuery();
 
-  useEffect(() => {
-    if (token) {
-      dispatch(fetchQuestions({ token }));
-      dispatch(fetchUserAnswers({ token }));
-    }
-  }, [dispatch, token]);
+  // Fetch user answers using RTK Query
+  const {
+    data: userAnswers = [],
+    isLoading: isLoadingUserAnswers,
+    error: userAnswersError,
+  } = useFetchUserAnswersQuery();
 
+  // Mutation hook for submitting an answer
+  const [submitAnswer, { isLoading: isSubmitting }] = useSubmitAnswerMutation();
+
+  // Update currentAnswer when the current question or userAnswers change
   useEffect(() => {
     const currentQuestion = questions[currentQuestionIndex];
     if (currentQuestion) {
       const existingAnswer = userAnswers.find(
         (ua) => ua.question.id === currentQuestion.id
       );
-      setCurrentAnswer(existingAnswer ? existingAnswer.answer : "");
+      setCurrentAnswer(existingAnswer ? existingAnswer.response : "");
     }
   }, [questions, userAnswers, currentQuestionIndex]);
 
-  const handleSubmit = () => {
+  // Handle submitting an answer
+  const handleSubmit = async () => {
     const currentQuestion = questions[currentQuestionIndex];
-    if (currentQuestion && token) {
-      dispatch(
-        submitAnswer({
-          token,
+    if (currentQuestion) {
+      try {
+        await submitAnswer({
           questionId: currentQuestion.id,
-          answer: currentAnswer,
-        })
-      );
-      dispatch(updateUserAnswer({ questionId: currentQuestion.id, answer: currentAnswer }));
-      if (currentQuestionIndex + 1 < questions.length) {
-        dispatch(setCurrentQuestionIndex(currentQuestionIndex + 1));
+          response: currentAnswer,
+        }).unwrap();
+
+        // Move to the next question
+        if (currentQuestionIndex + 1 < questions.length) {
+          dispatch(setCurrentQuestionIndex(currentQuestionIndex + 1));
+        } else {
+          // Optionally handle completion of all questions
+          console.log("All questions answered");
+        }
+      } catch (err) {
+        console.error("Failed to submit answer: ", err);
       }
     }
   };
-
-  const handleEditAnswer = (questionId: number, answer: string) => {
-    if (token) {
-      dispatch(submitAnswer({ token, questionId, answer }));
-      dispatch(updateUserAnswer({ questionId, answer }));
-    }
-  };
-
-  if (loading && questions.length === 0) {
+  
+  // Loading and error handling
+  if (isLoadingQuestions || isLoadingUserAnswers) {
     return <p>Loading...</p>;
   }
 
-  if (error && questions.length === 0) {
-    return <p>Error: {error}</p>;
+  if (questionsError || userAnswersError) {
+    return (
+      <p>
+        Error:{" "}
+        {questionsError?.toString() || userAnswersError?.toString()}
+      </p>
+    );
   }
 
   const currentQuestion = questions[currentQuestionIndex];
@@ -93,22 +102,17 @@ const Train: React.FC = () => {
             minRows={4}
             className="mb-4"
           />
-          <Button onClick={handleSubmit}>Submit</Button>
+          <Button onClick={handleSubmit} disabled={isSubmitting}>
+            Submit
+          </Button>
         </div>
       )}
 
-      <div>
+      <div className="flex flex-col items-center">
         <h3 className="text-xl font-semibold mb-4">Your Answers</h3>
         {userAnswers.map((ua) => (
-          <div key={ua.question.id} className="mb-6">
-            <p className="font-medium mb-2">{ua.question.question}</p>
-            <Textarea
-              value={ua.answer}
-              onChange={(e) =>
-                handleEditAnswer(ua.question.id, e.target.value)
-              }
-              minRows={3}
-            />
+          <div className="w-2/3" key={ua.id}>
+            <UserAnswerCard key={ua.id} userAnswer={ua} />
           </div>
         ))}
       </div>
