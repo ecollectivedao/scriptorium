@@ -25,7 +25,7 @@ export const apiSlice = createApi({
       return headers;
     },
   }),
-  tagTypes: ['UserAnswers'],
+  tagTypes: ['UserAnswers', 'Chat'],
   endpoints: (builder) => ({
     fetchQuestions: builder.query<Question[], void>({
       query: () => 'questions/',
@@ -57,6 +57,15 @@ export const apiSlice = createApi({
         body: { email, password },
       }),
     }),
+    // New Chat Mutation
+    chat: builder.mutation<string, { user_input: string }>({
+      query: (body) => ({
+        url: 'chat/',
+        method: 'POST',
+        body: body,
+      }),
+      invalidatesTags: ['Chat'],
+    }),
   }),
 });
 
@@ -65,4 +74,5 @@ export const {
   useFetchUserAnswersQuery,
   useSubmitAnswerMutation,
   useLoginMutation,
+  useChatMutation,
 } = apiSlice;

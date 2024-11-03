@@ -1,23 +1,20 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit/react";
+// src/lib/slices/trainingSlice.ts
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface TrainingState {
-  currentQuestionIndex: number;
+  // Remove currentQuestionIndex if it exists
 }
 
 const initialState: TrainingState = {
-  currentQuestionIndex: 0,
+  // Initialize other state properties if any
 };
 
 const trainingSlice = createSlice({
   name: 'training',
   initialState,
   reducers: {
-    setCurrentQuestionIndex(state, action: PayloadAction<number>) {
-      state.currentQuestionIndex = action.payload;
-    },
+    // Remove setCurrentQuestionIndex action
   },
 });
 
-export const { setCurrentQuestionIndex } = trainingSlice.actions;
 export default trainingSlice.reducer;
-

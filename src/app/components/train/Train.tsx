@@ -1,8 +1,8 @@
+// src/app/components/train/Train.tsx
 'use client';
 import React, { useEffect, useState } from "react";
-import { Input, Button, Textarea } from "@nextui-org/react";
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { setCurrentQuestionIndex } from "@/lib/slices/trainingSlice";
+import { Button, Textarea } from "@nextui-org/react";
+import { useAppSelector } from "@/lib/hooks";
 import {
   useFetchQuestionsQuery,
   useFetchUserAnswersQuery,
@@ -11,13 +11,6 @@ import {
 import UserAnswerCard from "./UserAnswerCard";
 
 const Train: React.FC = () => {
-  const dispatch = useAppDispatch();
-
-  // Get the current question index from the Redux store
-  const currentQuestionIndex = useAppSelector(
-    (state) => state.training.currentQuestionIndex
-  );
-
   // Local state for the current answer input
   const [currentAnswer, setCurrentAnswer] = useState("");
 
@@ -38,40 +31,39 @@ const Train: React.FC = () => {
   // Mutation hook for submitting an answer
   const [submitAnswer, { isLoading: isSubmitting }] = useSubmitAnswerMutation();
 
-  // Update currentAnswer when the current question or userAnswers change
+  // Compute the list of unanswered questions
+  const unansweredQuestions = questions.filter(
+    (question) => !userAnswers.some((ua) => ua.question.id === question.id)
+  );
+
+  // Determine the current question
+  const currentQuestion = unansweredQuestions[0] || null;
+
+  // Update currentAnswer when the current question changes
   useEffect(() => {
-    const currentQuestion = questions[currentQuestionIndex];
     if (currentQuestion) {
-      const existingAnswer = userAnswers.find(
-        (ua) => ua.question.id === currentQuestion.id
-      );
-      setCurrentAnswer(existingAnswer ? existingAnswer.response : "");
+      setCurrentAnswer("");
     }
-  }, [questions, userAnswers, currentQuestionIndex]);
+  }, [currentQuestion]);
 
   // Handle submitting an answer
   const handleSubmit = async () => {
-    const currentQuestion = questions[currentQuestionIndex];
-    if (currentQuestion) {
-      try {
-        await submitAnswer({
-          questionId: currentQuestion.id,
-          response: currentAnswer,
-        }).unwrap();
+    if (!currentQuestion) return;
 
-        // Move to the next question
-        if (currentQuestionIndex + 1 < questions.length) {
-          dispatch(setCurrentQuestionIndex(currentQuestionIndex + 1));
-        } else {
-          // Optionally handle completion of all questions
-          console.log("All questions answered");
-        }
-      } catch (err) {
-        console.error("Failed to submit answer: ", err);
-      }
+    try {
+      await submitAnswer({
+        questionId: currentQuestion.id,
+        response: currentAnswer,
+      }).unwrap();
+
+      // No need to manually manage currentQuestionIndex
+      // The component will re-render with updated userAnswers
+    } catch (err) {
+      console.error("Failed to submit answer: ", err);
+      // Optionally, handle error (e.g., display a message)
     }
   };
-  
+
   // Loading and error handling
   if (isLoadingQuestions || isLoadingUserAnswers) {
     return <p>Loading...</p>;
@@ -80,18 +72,15 @@ const Train: React.FC = () => {
   if (questionsError || userAnswersError) {
     return (
       <p>
-        Error:{" "}
-        {questionsError?.toString() || userAnswersError?.toString()}
+        Error: {questionsError?.toString() || userAnswersError?.toString()}
       </p>
     );
   }
 
-  const currentQuestion = questions[currentQuestionIndex];
-
   return (
-    <div className="p-4 bg-black">
-      {currentQuestion && (
-        <div className="mb-8">
+    <div className="p-4 bg-black flex flex-col items-center justify-center">
+      {currentQuestion ? (
+        <div className="flex flex-col items-center justify-center mb-8 mt-4 w-2/3">
           <h2 className="text-2xl font-semibold mb-4">
             {currentQuestion.question}
           </h2>
@@ -105,6 +94,11 @@ const Train: React.FC = () => {
           <Button onClick={handleSubmit} disabled={isSubmitting}>
             Submit
           </Button>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center mb-8 mt-4 w-2/3">
+          <h2 className="text-2xl font-semibold mb-4">All questions answered!</h2>
+          <p>Thank you for completing all the questions.</p>
         </div>
       )}
 
