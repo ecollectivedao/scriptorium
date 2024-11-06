@@ -1,5 +1,3 @@
-// src/app/components/chat/Chat.tsx
-
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
@@ -24,7 +22,7 @@ const Chat: React.FC = () => {
   const [userInput, setUserInput] = useState("");
 
   const [chat, { isLoading, isError, error }] = useChatMutation();
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
 
   const handleSend = async () => {
     if (!userInput.trim()) return;
@@ -37,7 +35,7 @@ const Chat: React.FC = () => {
 
       const assistantMessage: Message = {
         role: "assistant",
-        content: response, // Changed from response.response to response
+        content: response,
       };
       setMessages((prev) => [...prev, assistantMessage]);
 
@@ -60,13 +58,20 @@ const Chat: React.FC = () => {
   };
 
   useEffect(() => {
-    // Auto-scroll to the latest message
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Scroll the messages container to the bottom when messages change
+    messagesContainerRef.current?.scrollTo({
+      top: messagesContainerRef.current.scrollHeight,
+      behavior: "smooth",
+    });
   }, [messages]);
 
   return (
-    <div className="flex w-3/4 flex-col mx-auto">
-      <div className="flex-1 space-y-6 overflow-y-auto rounded-xl bg-white p-4 text-sm leading-6 shadow-sm">
+    <div className="flex w-3/4 flex-col mt-5 mx-auto">
+      <div
+        ref={messagesContainerRef}
+        className="flex-1 space-y-6 overflow-y-auto rounded-xl bg-white p-4 text-sm leading-6 shadow-sm w-2/3 mx-auto"
+        style={{ maxHeight: "300px" }} // Set a fixed max height
+      >
         {messages.map((message, index) => (
           <div
             key={index}
@@ -95,7 +100,6 @@ const Chat: React.FC = () => {
             </Card>
           </div>
         ))}
-        <div ref={messagesEndRef} />
       </div>
 
       {isError && (
@@ -106,7 +110,10 @@ const Chat: React.FC = () => {
         </div>
       )}
 
-      <form className="mt-2 bg-black" onSubmit={(e) => e.preventDefault()}>
+      <form
+        className="mt-2 w-2/3 mx-auto bg-zinc-100 rounded-lg"
+        onSubmit={(e) => e.preventDefault()}
+      >
         <label htmlFor="chat-input" className="sr-only">
           Enter your prompt
         </label>
@@ -122,20 +129,22 @@ const Chat: React.FC = () => {
           }
           disabled={isLoading}
         />
-        <Button
-          type="submit"
-          className="rounded-lg bg-blue-700 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 sm:text-base"
-          onClick={handleSend}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <Spinner size="sm" />
-          ) : (
-            <>
-              Send <FaPaperPlane className="ml-1" />
-            </>
-          )}
-        </Button>
+        <div className="flex justify-end">
+          <Button
+            type="submit"
+            className="rounded-lg bg-zinc-500 px-4 py-2 text-white text-sm font-medium hover:bg-zinc-400 focus:outline-none focus:ring-4 focus:ring-zinc-400 sm:text-base"
+            onClick={handleSend}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <Spinner size="sm" />
+            ) : (
+              <>
+                Send <FaPaperPlane className="ml-1" />
+              </>
+            )}
+          </Button>
+        </div>
       </form>
     </div>
   );
